@@ -4,6 +4,7 @@ import urllib
 import urllib2
 import json
 
+
 def __main__():
     try:
         file = open('question_data.txt')
@@ -17,7 +18,7 @@ def __main__():
     while True:
         data = {}
         place = raw_input('enter location\n')
-        if(place == 'exit'):
+        if (place == 'exit'):
             file.write(json.dumps(all_data))
             return
         location = fetch(place)
@@ -25,7 +26,8 @@ def __main__():
             print('invalid location')
             continue
         is_question = raw_input('is question?\n')
-        if(is_question == 'y'):
+        data['name'] = place
+        if (is_question == 'y'):
             question = raw_input('question?\n')
             data['correct_order'] = order
             data['question'] = question
@@ -40,11 +42,10 @@ def __main__():
         print(json.dumps(data))
 
 
-
-def fetch(place) :
+def fetch(place):
     url = 'https://maps.googleapis.com/maps/api/geocode/json?'
-    values = {'key' : 'AIzaSyCvxoKs-hj8VoAt45mswWiGuxBj0561SOg',
-            'address' : place}
+    values = {'key': 'AIzaSyCvxoKs-hj8VoAt45mswWiGuxBj0561SOg',
+              'address': place}
     data = urllib.urlencode(values)
 
     request = urllib2.urlopen(url + data)
@@ -55,6 +56,7 @@ def fetch(place) :
         return info['results'][0]['geometry']['location']
     except:
         return -1
+
 
 if __name__ == '__main__':
     __main__()
