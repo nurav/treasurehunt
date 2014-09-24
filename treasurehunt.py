@@ -21,6 +21,9 @@ def __main__():
             file.write(json.dumps(all_data))
             return
         location = fetch(place)
+        if location == -1:
+            print('invalid location')
+            continue
         is_question = raw_input('is question?\n')
         if(is_question == 'y'):
             question = raw_input('question?\n')
@@ -33,6 +36,7 @@ def __main__():
             data['question'] = None
             data['location'] = location
         all_data.append(data)
+
         print(json.dumps(data))
 
 
@@ -46,7 +50,11 @@ def fetch(place) :
     request = urllib2.urlopen(url + data)
 
     info = json.loads(request.read())
-    return info['results'][0]['geometry']['location']
+
+    try:
+        return info['results'][0]['geometry']['location']
+    except:
+        return -1
 
 if __name__ == '__main__':
     __main__()
