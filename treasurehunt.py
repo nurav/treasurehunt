@@ -5,12 +5,20 @@ import urllib2
 import json
 
 def __main__():
+    try:
+        file = open('question_data.txt')
+        all_data = json.loads(file.read())
 
+    except:
+        print("first use")
+        all_data = []
+    file = open('question_data.txt', 'w+')
     order = int(raw_input('start correct_order?\n'))
     while True:
         data = {}
         place = raw_input('enter location\n')
         if(place == 'exit'):
+            file.write(json.dumps(all_data))
             return
         location = fetch(place)
         is_question = raw_input('is question?\n')
@@ -24,8 +32,9 @@ def __main__():
             data['correct_order'] = -1
             data['question'] = None
             data['location'] = location
-
+        all_data.append(data)
         print(json.dumps(data))
+
 
 
 def fetch(place) :
