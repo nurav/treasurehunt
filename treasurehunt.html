@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Online Treasure Hunt</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      html, body, #map-canvas {
+        height: 100%;
+        margin: 0px;
+        padding: 0px;
+      }
+      #timer {
+        padding: 10px;
+        border-width: 2px;
+        border-style: solid;
+        border-color: #18CC95;
+        border-radius: 5px;
+        color: #000000;
+        background-color: #40FFFA;
+        text-align: right;
+        font-family: sans-serif;
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        left: 87.5%;
+        z-index: 14;
+      }
+      #lose-win {
+        line-height: 400px;
+        font-family: sans-serif;
+        font-size: 250%;
+        vertical-align: middle;
+        text-align: center;
+        background-color: #0000FF;
+        opacity: 0.5;
+        position: absolute;
+        display: none;
+        height: 100%;
+        width: 100%;
+        z-index: 10
+      }
+      #correct {
+        line-height: 400px;
+        font-family: sans-serif;
+        font-size: 250%;
+        vertical-align: middle;
+        text-align: center;
+        position: absolute;
+        background-color: #0000FF;
+        display: none;
+        height: 100%;
+        width: 100%;
+        z-index: 10
+      }
+      #questionbar {
+        display: inline-block;
+        padding: 10px;
+        border-width: 2px;
+        border-style: solid;
+        border-color: #18CC95;
+        border-radius: 5px;
+        right: 25px;
+        top: 25px;
+        left: 300px;
+        z-index: 3;
+        position: absolute;
+        text-align: center;
+        color: #000000;
+        font-family: sans-serif;
+        float: left; 
+        background-color: #40FFFA
+      }
+      .top {
+        display: none;
+        left: 40%;
+        top: 50%;
+        font-family: sans-serif;
+        font-size: 250%;
+        vertical-align: middle;
+        text-align: center;
+        position: absolute;
+        z-index: 11;
+        opacity: 1
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js">
+    <script type="text/javascript" src="http://google-maps-utility-library-v3.googlecode.com/svn/trunk/infobox/src/infobox.js"></script>
+    <script>
+        
+var tryTime = 900000;
+var currentCity = 0;
+var startTime;
+var intervalId;
+
+function updateTimer() {
+    function msToTime(duration) {
+      var milliseconds = parseInt((duration%1000)/100)
+          , seconds = parseInt((duration/1000)%60)
+          , minutes = parseInt((duration/(1000*60))%60)
+          , hours = parseInt((duration/(1000*60*60))%24);
+
+      hours = (hours < 10) ? "0" + hours : hours;
+      minutes = (minutes < 10) ? "0" + minutes : minutes;
+      seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+      return minutes + ":" + seconds;
+    };
+    $('#timer').text('Time left : ' + msToTime(tryTime - ((new Date()).getTime() - startTime)));
+    if((tryTime - ((new Date()).getTime() - startTime) != NaN))
+      if((tryTime - ((new Date()).getTime() - startTime)) < 0) wrongAnswer();
+  };
+function initialize() {
+  
+  updateTimer();
+  intervalId = setInterval(updateTimer, 1);
+  var time = new Date();
+  startTime = time.getTime();
+  var places = [{"correct_order": 1, "question": "One of James\u2019 colleagues in Santiago talks about this place where James used to fly quite often.<br>The word X comes from an Awarak word, meaning \u201cLand of wood and water\u201d. X  is an island country which is the third-largest island of the Greater Antilles. This country is known to produce some of the finest and laid back sport personalities like St. Leo.", "name": "Santiago", "location": {"lat": -33.4691199, "lng": -70.641997}}, {"correct_order": 2, "question": "At the international athletes meet, you caught up with Usain Bolt. He knew James personally and they had planned to go to X on the 3rd of next month.<br>It is named after Duke of X, the future King James II of England. It is an important center for international diplomacy. About one third of all the battles of the Revolutionary War took place in X. In 1609, Henry Hudson first claimed this area for the Dutch. An iconic statue was gifted to them by the French.", "name": "Jamaica", "location": {"lat": 18.109581, "lng": -77.297508}}, {"correct_order": 3, "question": "The officers have found out that the Moore family used to live somewhere in the Upper East Side. The officers however couldn\u2019t find anything that could help them. You decide to check it out yourself. In the dustbin of the living room you find a pa rtially broken iPad. What remains of it says<br>X is the fifth largest city in  America. The city of X started off as York, the capital of Upper Canada in 1793. York was incorporated and renamed X in 1834.  Caribana festival in X is the largest single day parade in North America. The parade route is 3.6 kilometers long. It starts at 10 am and finishes sometime around 8 pm. Over one million spectators come to see over 10,000 costumed participants.", "name": "New York", "location": {"lat": 40.7127837, "lng": -74.0059413}}, {"correct_order": 4, "question": "The famous actor Jim Carrey, who had made acquaintance with Margaret Moore gave him a riddle about a place she wanted him to go to. Let\u2019s give the riddle a shot! <br>Located on the shore of Table Bay,  X  was first developed by the Dutch East India Company as a supply station for Dutch ships sailing to East Africa, India, and the Far East. The city was named the World Design Capital for 2014 by the International Council of Societies of Industrial Design. In 2014 X was named the best place in the world to visit by The New York Times And is the only city in the world situated on the Indian and Atlantic Oceans. The X Floral Kingdom, which spans 90000 sq km, is the smallest and richest recognised floral area on the planet and was declared a world heritage site by UNESCO\u2019s committee. Identify X.", "name": "Toronto", "location": {"lat": 43.653226, "lng": -79.3831843}}, {"correct_order": 5, "question": "James and Margaret had started an NGO in the name of their son, for poor and malnourished children of Africa. Maybe they know something in X.<br>It was founded in 1890 as 'Salisbury' in honor of British Prime Minister Lord Salisbury. Magnificent Falls that forms the world's largest curtain of falling water is on the border between this and the neighbouring country. The local name for the Falls is 'Mosi-oa-Tunya' (the smoke that thunders).", "name": "Cape Town, South Africa", "location": {"lat": -33.9248685, "lng": 18.4240553}}, {"correct_order": 6, "question": "The children there told you about James and Margaret\u2019s now found faith in Islam. They would go to various places including X.<br> X is the \"City of the Prophet\",  is in the Hejaz region of Arabian Peninsula.The long form of the  X  means \"City of the Prophet of Allah\", because Mohammed fled there and later became its chief arbitrator, while the short form  just means \"the City\" .The first city in the Arabian Peninsula to have electricity and the place   where Mohammed's First Mosque was built , the mosque, which  is covered with so many subtle signs and secrets that it makes the DaVinci Code look like a cheap puzzle for pre-schoolers. ", "name": "Harare", "location": {"lat": -17.8639, "lng": 31.0297}}, {"correct_order": 7, "question": "The Imam in Medina was secretive. But he did mention something about X.<br>Excavations at the site of X, the capital of Persian province, put earliest settlements in that region to around 6000 B.C. X has the longest metro line in the middle East after Tel Aviv, and 6th longest in Asia. This city was the site of a revolution in 1979, when the US officials staged a spectacular escape from the embassy that was besieged by protesters. This event was commemorated in a recent movie.", "name": "Medina", "location": {"lat": 24.466667, "lng": 39.6}}, {"correct_order": 8, "question": "James had investments in nuclear power plants. He had to go to X to make necessary arrangements and permissions.<br>This city, celebrating 16th anniversary as capital of the state which was part of former USSR until 1991 was founded in the 1830s as a cossack military outpost on a key trade route between Central Asia and Western Siberia. Its original name was Akmolinsk, which means \"holy place\" in its language, but translates literally as \"white tombstone\".The name of this city itself means \u201cCapital City\u201d. ", "name": "Tehran", "location": {"lat": 35.696111, "lng": 51.423056}}, {"correct_order": 9, "question": "Due to  bureaucracy and other problems, James couldn\u2019t dig his treasure in Kazakhstan and moves to this place X in order to bury the treasure.<br>The name X literally means \u201cmuddy confluence\u201d. The X Tower is the seventh tallest telecommunication tower in the world and the tallest in south asia. The citizens of the United States, Canada, Arab countries, and Commonwealth European countries, do not need Visas to enter X for less than three months. dIt took 6 years to build the most iconic building in the city. Identify X. ", "name": "Astana", "location": {"lat": 51.166667, "lng": 71.43333299999999}}, {"correct_order": 10, "question": "In the middle of hustling bustling Kuala Lumpur you find a yogi of all people. The clairvoyant kindly asks you bathe in holy waters of X and purify yourself.<br>Mapam Yumtsois the other name for the lake X. The lake X is a freshwater lake. Lake X lies at 4,590 metres (15,060 ft) above mean sea level, a relatively high elevation for a large freshwater lake on the mostly saline lake-studded Plateau.<br>Buddhists also associate the lake with the legendary lake known as Anavatapta in Sanskrit and Anotatta in Pali, where Queen Maya is believed to have conceived Buddha.<br>As per Jainism X is associated with first Tirthankara Lord Shree Rishabhdev. It is believed that a person who takes bath in the water of this lake and drinks the water is cleansed of all his sins. Identify X.", "name": "Kuala Lumpur", "location": {"lat": 3.139003, "lng": 101.686855}}, {"correct_order": 11, "question": "Congratulations! You've Won.", "name": "Mansarovar, Tibet", "location": {"lat": 29.9903897, "lng": 80.7076834}}, {"correct_order": -1, "question": null, "name": "Tokyo", "location": {"lat": 35.6894875, "lng": 139.6917064}}, {"correct_order": -1, "question": null, "name": "Sao Paulo", "location": {"lat": -23.5505199, "lng": -46.63330939999999}}, {"correct_order": -1, "question": null, "name": "Buenos Aires", "location": {"lat": -34.6037232, "lng": -58.3815931}}, {"correct_order": -1, "question": null, "name": "Havana", "location": {"lat": 23.0540698, "lng": -82.34518899999999}}, {"correct_order": -1, "question": null, "name": "Mexico City", "location": {"lat": 19.4326077, "lng": -99.133208}}, {"correct_order": -1, "question": null, "name": "Pheonix", "location": {"lat": 33.4483771, "lng": -112.0740373}}, {"correct_order": -1, "question": null, "name": "Oklahoma City", "location": {"lat": 35.4675602, "lng": -97.5164276}}, {"correct_order": -1, "question": null, "name": "Cincinnati", "location": {"lat": 39.1031182, "lng": -84.5120196}}, {"correct_order": -1, "question": null, "name": "Dublin", "location": {"lat": 53.3498053, "lng": -6.2603097}}, {"correct_order": -1, "question": null, "name": "Glasgow", "location": {"lat": 55.864237, "lng": -4.251806}}, {"correct_order": -1, "question": null, "name": "Oxford", "location": {"lat": 51.7520209, "lng": -1.2577263}}, {"correct_order": -1, "question": null, "name": "Le Havre", "location": {"lat": 49.49437, "lng": 0.107929}}, {"correct_order": -1, "question": null, "name": "Toulouse", "location": {"lat": 43.604652, "lng": 1.444209}}, {"correct_order": -1, "question": null, "name": "San Sebastian", "location": {"lat": 43.318334, "lng": -1.9812313}}, {"correct_order": -1, "question": null, "name": "Madrid", "location": {"lat": 40.4167754, "lng": -3.7037902}}, {"correct_order": -1, "question": null, "name": "Seville", "location": {"lat": 37.3890924, "lng": -5.9844589}}, {"correct_order": -1, "question": null, "name": "Lisbon", "location": {"lat": 38.7222524, "lng": -9.1393366}}, {"correct_order": -1, "question": null, "name": "Florence", "location": {"lat": 43.7710332, "lng": 11.2480006}}, {"correct_order": -1, "question": null, "name": "Warsaw", "location": {"lat": 52.2296756, "lng": 21.0122287}}, {"correct_order": -1, "question": null, "name": "Berlin", "location": {"lat": 52.52000659999999, "lng": 13.404954}}, {"correct_order": -1, "question": null, "name": "Athens", "location": {"lat": 37.983917, "lng": 23.7293599}}, {"correct_order": -1, "question": null, "name": "Jerusalem", "location": {"lat": 31.768319, "lng": 35.21371}}, {"correct_order": -1, "question": null, "name": "Ankara", "location": {"lat": 39.92077, "lng": 32.85411}}, {"correct_order": -1, "question": null, "name": "Helsinki", "location": {"lat": 60.17332440000001, "lng": 24.9410248}}, {"correct_order": -1, "question": null, "name": "Beijing", "location": {"lat": 39.90403, "lng": 116.407526}}, {"correct_order": -1, "question": null, "name": "Shanghai", "location": {"lat": 31.230416, "lng": 121.473701}}, {"correct_order": -1, "question": null, "name": "New Delhi", "location": {"lat": 28.635308, "lng": 77.22496}}, {"correct_order": -1, "question": null, "name": "Bengaluru", "location": {"lat": 12.9715987, "lng": 77.5945627}}, {"correct_order": -1, "question": null, "name": "Mumbai", "location": {"lat": 19.0759837, "lng": 72.8776559}}, {"correct_order": -1, "question": null, "name": "Bangkok", "location": {"lat": 13.7278956, "lng": 100.5241235}}, {"correct_order": -1, "question": null, "name": "Hanoi", "location": {"lat": 21.033333, "lng": 105.85}}, {"correct_order": -1, "question": null, "name": "Dubai", "location": {"lat": 25.0476643, "lng": 55.1817407}}, {"correct_order": -1, "question": null, "name": "Lagos", "location": {"lat": 6.5243793, "lng": 3.3792057}}, {"correct_order": -1, "question": null, "name": "karachi", "location": {"lat": 24.8614622, "lng": 67.0099388}}, {"correct_order": -1, "question": null, "name": "Manila", "location": {"lat": 14.5995124, "lng": 120.9842195}}, {"correct_order": -1, "question": null, "name": "sydney", "location": {"lat": -33.8674869, "lng": 151.2069902}}, {"correct_order": -1, "question": null, "name": "adelaide", "location": {"lat": -34.92862119999999, "lng": 138.5999594}}, {"correct_order": -1, "question": null, "name": "Mogadishu", "location": {"lat": 2.033333, "lng": 45.35}}, {"correct_order": -1, "question": null, "name": "kampala", "location": {"lat": 0.313611, "lng": 32.581111}}, {"correct_order": -1, "question": null, "name": "Montreal", "location": {"lat": 45.5086699, "lng": -73.55399249999999}}, {"correct_order": -1, "question": null, "name": "Xi'an", "location": {"lat": 34.341568, "lng": 108.940175}}, {"correct_order": -1, "question": null, "name": "Chengdu", "location": {"lat": 30.572269, "lng": 104.066541}}, {"correct_order": -1, "question": null, "name": "Perth", "location": {"lat": -31.9530044, "lng": 115.8574693}}, {"correct_order": -1, "question": null, "name": "Karlamilyi National Park", "location": {"lat": -22.5572572, "lng": 122.5372741}}];
+  var mapOptions = {
+    zoom: 4,
+    center: new google.maps.LatLng(-25.363882, 131.044922),
+    streetViewControl : false
+  };
+
+  var map = new google.maps.Map(document.getElementById('map-canvas'),
+      mapOptions);
+
+  places.forEach(function(place) {
+    
+    var content = document.createElement('div'),
+                          button;
+                      content.innerHTML = 'Are you sure you want to select ' + place["name"] + '?<br/>';
+                      button = content.appendChild(document.createElement('input'));
+                      button.type = 'button';
+                      button.value = 'Yes'
+                      
+    var infowindow = new google.maps.InfoWindow({
+      content: content
+    });
+    var marker = new google.maps.Marker({
+      position: new google.maps.LatLng(place["location"]["lat"], place["location"]["lng"]),
+      map: map,
+      title: place["name"]
+      })
+    google.maps.event.addListener(marker, 'click', function() {
+        infowindow.open(map, marker);
+      
+      });
+    google.maps.event.addDomListener(button, 'click', function(){
+                        if (place["correct_order"] == currentCity + 1) {
+                          moveToNextQuestion(currentCity, places);
+                          place['correct_order'] = -1;
+                          marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png')
+                        }
+                        else{
+                          wrongAnswer();
+                        }
+                        infowindow.close();
+                      });
+    
+    
+    
+   }
+  );
+    
+  
+}
+
+var wrongAnswer = function () {
+  var bar = document.getElementById('questionbar');
+  bar.style.display = 'none';
+  $('#lose-win').fadeIn('slow');
+  $('#lose').html('Sorry, you lost. <br>You reached city ' + currentCity);
+  $('#lose').fadeIn('slow');
+  clearInterval(intervalId);
+};
+      
+var moveToNextQuestion = function (questionOrder, places) {
+  function msToTime(duration) {
+      var milliseconds = parseInt((duration%1000)/100)
+          , seconds = parseInt((duration/1000)%60)
+          , minutes = parseInt((duration/(1000*60))%60)
+          , hours = parseInt((duration/(1000*60*60))%24);
+
+      hours = (hours < 10) ? "0" + hours : hours;
+      minutes = (minutes < 10) ? "0" + minutes : minutes;
+      seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+      return minutes + ":" + seconds + "." + milliseconds;
+  };
+  if(questionOrder == 10){
+    $('#timer').hide();
+    $('#lose-win').fadeIn('slow');
+    $('#won').show();
+    $('#questionbar').hide();
+    $('#won').html('You Won!<br>Time taken ' + (msToTime((new Date()).getTime() - startTime)));
+  }
+  var correct = document.getElementById('correct');
+  correct.style.display = 'block';
+  $('#correct').fadeOut('slow',function(questionOrder, places){
+    var nextQuestion = '';
+    var i;
+    for(i = 0; i < places.length; i++)
+    {
+      var place = places[i];
+      if(place['correct_order'] == questionOrder + 1)
+      {
+        nextQuestion = place['question'];
+        currentCity += 1;
+        break;
+      }
+    }
+    var bar = document.getElementById('questionbar');
+    bar.innerHTML = nextQuestion;
+  }(questionOrder, places))
+  
+
+}
+   
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+    </script>
+  </head>
+  <body>
+    <div id="questionbar">On a lazy peaceful Sunday morning, suddenly, the bell rings and two officers in stunning uniforms appear. After showing proper identification and apologizing for showing up without prior information they ask for your help. You, being a tech-wizard are suited for the job.<br>The following information is classified.<br>The untimely demise of the eccentric billionaires James and Margaret Moore, has left their 1-year old boy orphaned. But James was aware of the imminent threat and decided to hide away their entire wealth.
+It’s upon you to help the officers (Interpol) to find and restore the wealth to its rightful owner, the toddler.<br>The details of the treasure are inside the Personal Computer of Mr. James which are locked. You manage to crack the code and unlock the Computer which gives the officers the first hint about the treasure which reads, The City of the Island Hills, located at an elevation of 520m above the sea level. This city(X) is named after biblical figure St. Jacob. X partially shares it’s name with the home stadium of Real Madrid.
+
+
+</div>
+    <div id="lose-win"></div>
+    <span id="timer"></span>
+    <span id="lose" class="top">Sorry, You Lose!</span>
+    <span id="won" class="top">Yaay! You Won!</span>
+    <div id="correct"><h4>Correct Answer!</h4></div>
+    <div id="map-canvas"></div>
+  </body>
+</html>
